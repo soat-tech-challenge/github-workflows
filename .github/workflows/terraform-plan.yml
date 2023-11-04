@@ -13,9 +13,6 @@ on:
       config_directory:
         type: string
         default: "./"
-    secrets:
-      cloud_token:
-        required: true
 
 jobs:
   terraform-cloud-speculative-plan:
@@ -31,7 +28,7 @@ jobs:
 
     env:
       TF_CLOUD_ORGANIZATION: ${{ inputs.cloud_organization }}
-      TF_API_TOKEN: ${{ secrets.cloud_token }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       TF_WORKSPACE: ${{ inputs.cloud_workspace }}
       CONFIG_DIRECTORY: ${{ inputs.config_directory }}
 
