@@ -1,0 +1,40 @@
+# Terraform CLI-driven destroy run using Remote Host
+name: Terraform Destroy
+
+on:
+  workflow_call:
+    inputs:
+      workspace:
+        type: string
+    secrets:
+      token:
+        required: true
+
+jobs:
+  terraform_destroy:
+    name: Terraform Destroy
+
+    runs-on: ubuntu-latest
+
+    env:
+      TF_IN_AUTOMATION: true
+      TF_INPUT: false
+      TF_WORKSPACE: ${{ inputs.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.token }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -destroy
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
