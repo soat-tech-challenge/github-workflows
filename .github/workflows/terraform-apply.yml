@@ -13,14 +13,15 @@ on:
       config_directory:
         type: string
         default: "./"
-    secrets:
-      cloud_token:
-        required: true
 
 jobs:
-  apply:
-    name: Apply
+  terraform_apply:
+    name: Terraform Apply via Terraform Cloud API
     runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ inputs.cloud_workspace }}
+      url: ${{ steps.apply-run.outputs.run_link }}
 
     outputs:
       status: ${{ steps.apply-run.outputs.status }}
@@ -31,7 +32,7 @@ jobs:
 
     env:
       TF_CLOUD_ORGANIZATION: ${{ inputs.cloud_organization }}
-      TF_API_TOKEN: ${{ secrets.cloud_token }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       TF_WORKSPACE: ${{ inputs.cloud_workspace }}
       CONFIG_DIRECTORY: ${{ inputs.config_directory }}
 
