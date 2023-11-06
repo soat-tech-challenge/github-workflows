@@ -20,7 +20,8 @@ jobs:
       url: https://hub.docker.com/layers/${{ inputs.image_name }}/${{ steps.bump.outputs.tag }}/images/${{ steps.docker_build_push.outputs.digest }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.BUMP_PAT }}
 
