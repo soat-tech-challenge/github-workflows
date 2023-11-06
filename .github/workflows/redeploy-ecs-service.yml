@@ -1,0 +1,33 @@
+name: Redeploy ECS Service
+
+on:
+  workflow_call:
+    inputs:
+      aws_region:
+        type: string
+        required: true
+      cluster_name:
+        type: string
+        required: true
+      service_name:
+        type: string
+        required: true
+
+jobs:
+  redeploy:
+    name: Redeploy ECS Service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Force new Deployment on ECS Service
+        run: aws ecs update-service --region ${{ inputs.aws_region }} --cluster ${{ inputs.cluster_name }} --service ${{ inputs.cluster_name }}
