@@ -30,4 +30,4 @@ jobs:
           aws-region: ${{ inputs.aws_region }}
 
       - name: Force new Deployment on ECS Service
-        run: aws ecs update-service --region ${{ inputs.aws_region }} --cluster ${{ inputs.cluster_name }} --service ${{ inputs.cluster_name }}
+        run: aws ecs update-service --region ${{ inputs.aws_region }} --cluster ${{ inputs.cluster_name }} --service ${{ inputs.cluster_name }} --force-new-deployment
