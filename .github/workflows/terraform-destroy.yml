@@ -4,7 +4,7 @@ name: Terraform Destroy
 on:
   workflow_call:
     inputs:
-      workspace:
+      cloud_workspace:
         type: string
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     env:
       TF_IN_AUTOMATION: true
       TF_INPUT: false
-      TF_WORKSPACE: ${{ inputs.workspace }}
+      TF_WORKSPACE: ${{ inputs.cloud_workspace }}
 
     steps:
       - name: Checkout
