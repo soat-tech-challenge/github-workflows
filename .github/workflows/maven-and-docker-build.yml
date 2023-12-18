@@ -20,7 +20,7 @@ jobs:
           distribution: "liberica"
           cache: "maven"
 
-      - name: Cache SonarCloud packages
+      - name: Cache SonarQube packages
         uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
@@ -40,7 +40,7 @@ jobs:
             -Dsonar.organization=soat-tech-challenge \
             -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
 
-      - name: Build and push
+      - name: Build Dockerfile (no push)
         uses: docker/build-push-action@v5
         with:
           context: .
