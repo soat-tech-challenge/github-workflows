@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # For Sonar blame information
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -30,14 +32,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          # Replace '/' with '_' to get project key
-          PROJECT_KEY=${${{ github.repository }}//\//_}
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
 
-          mvn verify -B -P prod "-Dstyle.color=always" \
+          mvn verify -B -P prod,coverage "-Dstyle.color=always" \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.organization=${{ github.repository_owner }} \
-            -Dsonar.projectKey=$PROJECT_KEY
+            -Dsonar.organization=soat-tech-challenge \
+            -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
 
       - name: Build and push
         uses: docker/build-push-action@v5
