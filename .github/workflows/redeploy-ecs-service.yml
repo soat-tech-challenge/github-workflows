@@ -17,10 +17,12 @@ jobs:
   redeploy:
     name: Redeploy ECS Service
     runs-on: ubuntu-latest
+    environment:
+      name: AWS
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
@@ -31,3 +33,4 @@ jobs:
 
       - name: Force new Deployment on ECS Service
         run: aws ecs update-service --region ${{ inputs.aws_region }} --cluster ${{ inputs.cluster_name }} --service ${{ inputs.service_name }} --force-new-deployment
+# Nice to have: set environment url using step output + link2aws
