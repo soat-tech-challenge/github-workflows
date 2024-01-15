@@ -20,8 +20,8 @@ jobs:
       name: Build # To isolate BUMP_PAT
       url: ${{ steps.upload.outputs.artifact-url }}
     outputs:
-      artifact_name: app-${{ steps.bump.outputs.tag }}
-      new_tag: ${{ steps.bump.outputs.tag }}
+      artifact_name: app-${{ steps.semver.outputs.nextStrict }}
+      new_tag: ${{ steps.semver.outputs.nextStrict }}
 
     steps:
       - name: Checkout
@@ -44,16 +44,17 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Run Tests
-        run: mvn test -B -P prod "-Dstyle.color=always"
-
-      - name: Bump Maven version
-        id: bump
-        uses: soat-tech-challenge/gh-action-bump-maven-version@main
+      - name: Get Version Information
+        id: semver
+        uses: ietf-tools/semver-action@v1
         with:
-          commit-message: "[skip ci] Bump version to"
+          token: ${{ github.token }}
+          patchAll: true
 
-      - name: Verify with Maven
+      - name: Set Next Version # So app can be packaged with correct version
+        run: mvn org.codehaus.mojo:versions-maven-plugin:set -DnewVersion=${{ steps.semver.outputs.nextStrict }}
+
+      - name: Verify and Scan with Maven
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -65,11 +66,18 @@ jobs:
             -Dsonar.organization=soat-tech-challenge \
             -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
 
+      - name: Commit, Tag and Push New Version
+        id: bump
+        uses: soat-tech-challenge/gh-action-bump-maven-version@main
+        with:
+          commit-message: "[skip ci] Bump version to"
+          version: ${{ steps.semver.outputs.nextStrict }}
+
       - name: Upload Artifact
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ steps.bump.outputs.tag }}
+          name: app-${{ steps.semver.outputs.nextStrict }}
           path: target/app.jar
           if-no-files-found: error
 
