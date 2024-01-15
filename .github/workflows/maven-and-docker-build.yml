@@ -2,6 +2,10 @@ name: Maven and Docker Build
 
 on:
   workflow_call:
+    inputs:
+      docker:
+        type: boolean
+        default: true
 
 jobs:
   build:
@@ -41,6 +45,7 @@ jobs:
             -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
 
       - name: Build Dockerfile (no push)
+        if: ${{ inputs.docker == true || inputs.docker == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
