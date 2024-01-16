@@ -50,6 +50,7 @@ jobs:
         with:
           token: ${{ github.token }}
           patchAll: true
+          noVersionBumpBehavior: patch
           skipInvalidTags: true
 
       - name: Set Next Version # So app can be packaged with correct version
