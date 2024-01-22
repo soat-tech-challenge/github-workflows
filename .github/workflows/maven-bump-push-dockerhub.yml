@@ -60,13 +60,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
-
           mvn verify -B -P prod,coverage "-Dstyle.color=always" \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.organization=soat-tech-challenge \
-            -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
+            -Dsonar.organization=${{ github.repository_owner }} \
+            -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
 
       - name: Commit, Tag and Push New Version
         id: bump
@@ -75,13 +73,20 @@ jobs:
           commit-message: "[skip ci] Bump version to"
           version: ${{ steps.semver.outputs.nextStrict }}
 
-      - name: Upload Artifact
+      - name: Upload JAR Artifact
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ steps.semver.outputs.nextStrict }}
-          path: target/app.jar
+          name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}
+          path: target/*.jar
           if-no-files-found: error
+
+      - name: Upload Coverage Report Artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}-coverage-report
+          path: target/site/jacoco/*
 
   docker:
     name: Docker Build and Push
@@ -96,11 +101,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download Artifact
+      - name: Download JAR Artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact_name }}
-          path: target/app.jar
+          path: target/*.jar
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -108,10 +113,28 @@ jobs:
           username: ${{ inputs.dockerhub_username }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ inputs.dockerhub_username }}/${{ github.event.repository.name }}
+          labels: |
+            org.opencontainers.image.authors=${{ github.event.repository.owner.html_url }}#group-members
+            org.opencontainers.image.title=${{ github.event.repository.name }}
+            org.opencontainers.image.description=${{ github.event.repository.description }}
+            org.opencontainers.image.url=https://hub.docker.com/r/${{ inputs.dockerhub_username }}/${{ github.event.repository.name }}
+            org.opencontainers.image.documentation=${{ github.event.repository.html_url }}/wiki
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.version=${{ needs.build.outputs.new_tag }}
+            org.opencontainers.image.created=${{ github.event.repository.pushed_at }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
+
       - name: Build and push image
         id: docker_build_push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ inputs.image_name }}:${{ needs.build.outputs.new_tag }},${{ inputs.image_name }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
