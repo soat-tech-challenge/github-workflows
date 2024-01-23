@@ -16,9 +16,7 @@ jobs:
   build:
     name: Maven Build
     runs-on: ubuntu-latest
-    environment:
-      name: Build # To isolate BUMP_PAT
-      url: ${{ steps.upload.outputs.artifact-url }}
+    environment: Build # To contain BUMP_PAT within an environment
     outputs:
       artifact_name: app-${{ steps.semver.outputs.nextStrict }}
       new_tag: ${{ steps.semver.outputs.nextStrict }}
@@ -74,7 +72,6 @@ jobs:
           version: ${{ steps.semver.outputs.nextStrict }}
 
       - name: Upload JAR Artifact
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}
@@ -82,7 +79,6 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Coverage Report Artifact
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}-coverage-report
@@ -105,7 +101,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact_name }}
-          path: target/*.jar
+          path: target
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -117,12 +113,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ inputs.dockerhub_username }}/${{ github.event.repository.name }}
+          images: ${{ inputs.image_name }}
+          flavor: |
+            latest=true
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.build.outputs.new_tag }}
           labels: |
             org.opencontainers.image.authors=${{ github.event.repository.owner.html_url }}#group-members
             org.opencontainers.image.title=${{ github.event.repository.name }}
             org.opencontainers.image.description=${{ github.event.repository.description }}
-            org.opencontainers.image.url=https://hub.docker.com/r/${{ inputs.dockerhub_username }}/${{ github.event.repository.name }}
+            org.opencontainers.image.url=https://hub.docker.com/r/${{ inputs.image_name }}
             org.opencontainers.image.documentation=${{ github.event.repository.html_url }}/wiki
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.version=${{ needs.build.outputs.new_tag }}
