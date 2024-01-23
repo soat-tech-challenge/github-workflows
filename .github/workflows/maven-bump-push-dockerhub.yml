@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: Build # To contain BUMP_PAT within an environment
     outputs:
-      artifact_name: app-${{ steps.semver.outputs.nextStrict }}
+      artifact_name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}
       new_tag: ${{ steps.semver.outputs.nextStrict }}
 
     steps:
