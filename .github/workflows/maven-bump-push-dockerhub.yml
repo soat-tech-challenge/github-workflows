@@ -120,6 +120,7 @@ jobs:
             type=semver,pattern={{version}},value=${{ needs.build.outputs.new_tag }}
           labels: |
             org.opencontainers.image.authors=${{ github.event.repository.owner.html_url }}#group-members
+            org.opencontainers.image.url=https://hub.docker.com/r/${{ inputs.image_name }}
 
       - name: Build and push image
         id: docker_build_push
