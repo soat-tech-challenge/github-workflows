@@ -111,7 +111,7 @@ jobs:
 
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.image_name }}
           flavor: |
