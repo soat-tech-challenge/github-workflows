@@ -78,12 +78,6 @@ jobs:
           path: target/*.jar
           if-no-files-found: error
 
-      - name: Upload Coverage Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-${{ steps.semver.outputs.nextStrict }}-coverage-report
-          path: target/site/jacoco/*
-
   docker:
     name: Docker Build and Push
     if: ${{ inputs.docker == true || inputs.docker == 'true' }}
