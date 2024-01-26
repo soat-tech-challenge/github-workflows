@@ -1,2 +1,2 @@
 # github-workflows
-Reusable workflows for these repositories actions
+Reusable workflows for the repositories in this organization.
