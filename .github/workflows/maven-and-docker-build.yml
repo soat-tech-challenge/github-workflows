@@ -36,13 +36,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
-
           mvn verify -B -P prod,coverage "-Dstyle.color=always" \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.organization=soat-tech-challenge \
-            -Dsonar.projectKey=soat-tech-challenge_$REPO_NAME
+            -Dsonar.organization=${{ github.repository_owner }} \
+            -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
 
       - name: Build Dockerfile (no push)
         if: ${{ inputs.docker == true || inputs.docker == 'true' }}
